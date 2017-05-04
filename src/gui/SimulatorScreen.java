@@ -15,6 +15,7 @@ import simulator.Simulator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 public class SimulatorScreen {
 
@@ -40,6 +41,9 @@ public class SimulatorScreen {
 
     @FXML
     private TextArea logArea;
+
+    @FXML
+    private CheckBox parallel;
 
     //
 
@@ -165,29 +169,44 @@ public class SimulatorScreen {
     private List<SimulationResult> calculateSimulationResults(Estimator estimator, int initialTagCount, int maxTagCount, int tagCountIncrement, int simulationCount) {
         List<SimulationResult> relevantSimulationResults = new ArrayList<>();
         String relevantDataLabel = showInCharts.getSelectionModel().getSelectedItem();
-        for (int tagCount = initialTagCount; tagCount <= maxTagCount; tagCount += tagCountIncrement) {
-            List<SimulationResult> simulationResults = calculateSimulationResultsPerTagCount(estimator, tagCount, simulationCount);
-            switch (relevantDataLabel) {
-                case "Average":
-                    relevantSimulationResults.add(SimulationResult.average(simulationResults));
-                    break;
-                case "Min":
-                    relevantSimulationResults.add(SimulationResult.min(simulationResults));
-                    break;
-                case "Max":
-                    relevantSimulationResults.add(SimulationResult.max(simulationResults));
-                    break;
+        if (!parallel.isSelected()) {
+            for (int tagCount = initialTagCount; tagCount <= maxTagCount; tagCount += tagCountIncrement) {
+                System.out.println("Simulating " + estimator.toString() + " tag count: " + tagCount);
+                relevantSimulationResults.add(calculateRelevantData(calculateSimulationResultsPerTagCount(estimator, tagCount, simulationCount), relevantDataLabel));
             }
+        } else {
+            IntStream.iterate(initialTagCount, tagCount -> tagCount + tagCountIncrement)
+                    .limit((maxTagCount - initialTagCount) / tagCountIncrement + 1)
+                    .parallel()
+                    .forEach(tagCount ->
+                            relevantSimulationResults.add(calculateRelevantData(calculateSimulationResultsPerTagCount(estimator, tagCount, simulationCount), relevantDataLabel)));
         }
         return relevantSimulationResults;
     }
 
     private List<SimulationResult> calculateSimulationResultsPerTagCount(Estimator estimator, int tagCount, int simulationCount) {
         List<SimulationResult> results = new ArrayList<>();
-        for (int i = 0; i < simulationCount; i++) {
-            results.add(Simulator.simulate(estimator.copy(), tagCount));
+        if (!parallel.isSelected()) {
+            for (int i = 0; i < simulationCount; i++) {
+                results.add(Simulator.simulate(estimator.copy(), tagCount));
+            }
+        } else {
+            IntStream.range(0, simulationCount).parallel()
+                    .forEach(simulation -> results.add(Simulator.simulate(estimator.copy(), tagCount)));
         }
         return results;
+    }
+
+    private SimulationResult calculateRelevantData(List<SimulationResult> simulationResults, String relevantData) {
+        switch (relevantData) {
+            case "Average":
+                return SimulationResult.average(simulationResults);
+            case "Min":
+                return SimulationResult.min(simulationResults);
+            case "Max":
+                return SimulationResult.max(simulationResults);
+        }
+        return null;
     }
 
     private void plotSimulationData(List<SimulationResult> simulationResults) {
@@ -216,7 +235,7 @@ public class SimulatorScreen {
             slotsPerTagCountSeriesData.setNode(new ChartDataNode(simulationResult.createdSlots, seriesIndex));
             slotsPerTagCountSeries.getData().add(slotsPerTagCountSeriesData);
 
-            XYChart.Data<Number, Number> timePerTagCountSeriesData = new XYChart.Data<>(simulationResult.tagCount, simulationResult.executionTime);
+            XYChart.Data<Number, Number> timePerTagCountSeriesData = new XYChart.Data<>(simulationResult.tagCount, Math.log(simulationResult.executionTime + 1));
             timePerTagCountSeriesData.setNode(new ChartDataNode(simulationResult.executionTime, seriesIndex));
             timePerTagCountSeries.getData().add(timePerTagCountSeriesData);
 

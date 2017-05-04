@@ -58,7 +58,7 @@
                                 <NumberAxis label="Tags" />
                             </xAxis>
                             <yAxis>
-                                <NumberAxis label="Exec time (ms)" side="LEFT" />
+                                <NumberAxis label="Exec time (log(ms)) - hover (ms)" side="LEFT" />
                             </yAxis>
                         </LineChart>
                     </children>
@@ -166,6 +166,7 @@
                         </Button>
                     </children>
                 </AnchorPane>
+            <CheckBox fx:id="parallel" mnemonicParsing="false" text="Parallel" />
             <Label layoutX="10.0" layoutY="381.0" text="Log">
                <font>
                   <Font size="16.0" />
@@ -174,7 +175,7 @@
                   <Insets left="5.0" right="5.0" top="5.0" />
                </padding>
             </Label>
-            <TextArea fx:id="logArea" editable="false" prefHeight="108.0" prefWidth="171.0" />
+            <TextArea fx:id="logArea" editable="false" prefHeight="60.0" prefWidth="171.0" />
             </children>
             <BorderPane.margin>
                 <Insets left="15.0" />
