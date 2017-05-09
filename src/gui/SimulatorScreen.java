@@ -65,6 +65,7 @@ public class SimulatorScreen {
                 new LowerBound(64),
                 new Schoute(64),
                 new EomLee(64, 1e-3f),
+                new Chen(64),
                 new QAlgorithm(6, 0.1f),
                 new QAlgorithm(6, 0.2f),
                 new QAlgorithm(6, 0.3f),
@@ -73,6 +74,7 @@ public class SimulatorScreen {
                 new LowerBound(128),
                 new Schoute(128),
                 new EomLee(128, 1e-3f),
+                new Chen(128),
                 new QAlgorithm(7, 0.1f),
                 new QAlgorithm(7, 0.2f),
                 new QAlgorithm(7, 0.3f),
@@ -102,6 +104,8 @@ public class SimulatorScreen {
         showInCharts.setItems(FXCollections.observableArrayList("Average", "Min", "Max"));
         showInCharts.getSelectionModel().selectFirst();
         //
+        timePerTagCount = new LineChart<>(new NumberAxis(), new LogAxis());
+        //
         ((NumberAxis) slotsPerTagCount.getXAxis()).setForceZeroInRange(false);
         ((NumberAxis) timePerTagCount.getXAxis()).setForceZeroInRange(false);
         ((NumberAxis) idleSlotsPerTagCount.getXAxis()).setForceZeroInRange(false);
@@ -114,6 +118,12 @@ public class SimulatorScreen {
         timePerTagCount.setCreateSymbols(false);
         idleSlotsPerTagCount.setCreateSymbols(false);
         collisionSlotsPerTagCount.setCreateSymbols(false);
+        //
+        /*
+        ((NumberAxis) slotsPerTagCount.getYAxis()).setAutoRanging(false);
+        ((NumberAxis) slotsPerTagCount.getYAxis()).setTickUnit(300);
+        ((NumberAxis) slotsPerTagCount.getYAxis()).setUpperBound(6000);
+        //*/
     }
 
     @FXML

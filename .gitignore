@@ -20,7 +20,7 @@ fabric.properties
 # Compiled class file
 *.class
 
-# Log file
+# LogAxis file
 *.log
 
 # BlueJ files
