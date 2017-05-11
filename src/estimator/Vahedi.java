@@ -58,10 +58,10 @@ public class Vahedi implements Estimator {
         double notI_LpowN = Math.pow(1 - i / l, n);
         // See P2
         double arrNS = MathUtils.arrangement(n, s);
-        double LIpowN = Math.pow(l - i, n);
+        double LIpowN = MathUtils.fastPow(l - i, n);
         double LISpowNS = Math.pow(l - i - s, n - s);
         // See P3
-        double CpowNS = Math.pow(c, n - s);
+        double CpowNS = MathUtils.fastPow(c, n - s);
 
         double fatL_fatIfatSfatC = MathUtils.factAndDiv(l, i, s, c);
 
@@ -130,12 +130,12 @@ public class Vahedi implements Estimator {
             for (double k = 0; k <= c; k++) {
                 double fatK = MathUtils.factorial(k);
                 double fatNS_fatNSK = MathUtils.factAndDiv(n - s, n - s - k);
-                for (double v = 0; v <= c - k; k++) {
+                for (double v = 0; v <= c - k; v++) {
                     simulationResult.iterations++;
 
                     double neg1powKV = Math.pow(-1, k + v);
                     double fatC_fatKfatCKVfatV = MathUtils.factAndDiv(c, c - k - v, v) / fatK;
-                    double CKVpowNSK = Math.pow(c - k - v, n - s - k);
+                    double CKVpowNSK = MathUtils.fastPow(c - k - v, n - s - k);
                     double CKVpowNSK_CpowNS = CKVpowNSK / CpowNS;
                     p3 += neg1powKV * fatC_fatKfatCKVfatV * fatNS_fatNSK * CKVpowNSK_CpowNS;
                 }

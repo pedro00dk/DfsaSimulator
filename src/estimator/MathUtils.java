@@ -7,6 +7,17 @@ package estimator;
  */
 public class MathUtils {
 
+    private static final double[][] pow = new double[1010][1010];
+
+    static {
+        for (int i = 0; i < 1010; i++) {
+            pow[i][0] = 1;
+            for (int j = 1; j < 1010; j++) {
+                pow[i][j] = pow[i][j - 1] * i;
+            }
+        }
+    }
+
     /**
      * Prevents instantiation.
      */
@@ -50,5 +61,9 @@ public class MathUtils {
             acc *= next;
         }
         return acc;
+    }
+
+    public static double fastPow(double n, double p) {
+        return pow[(int) n][(int) p];
     }
 }

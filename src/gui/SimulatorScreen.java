@@ -136,6 +136,9 @@ public class SimulatorScreen {
         timePerTagCount.setData(FXCollections.observableArrayList());
         idleSlotsPerTagCount.setData(FXCollections.observableArrayList());
         collisionSlotsPerTagCount.setData(FXCollections.observableArrayList());
+
+        iterationsPerTagCount.setData(FXCollections.observableArrayList());
+
         logArea.appendText("Cleaning chart data\n");
 
         List<Estimator> estimatorsToSimulate = estimatorChooser.getSelectionModel().getSelectedItems();
@@ -267,7 +270,7 @@ public class SimulatorScreen {
             collisionSlotsPerTagCountSeriesData.setNode(new ChartDataNode(simulationResult.collisionSlots, seriesIndex));
             collisionSlotsPerTagCountSeries.getData().add(collisionSlotsPerTagCountSeriesData);
 
-            XYChart.Data<Number, Number> iterationsPerTagCountSeriesData = new XYChart.Data<>(simulationResult.tagCount, simulationResult.iterations);
+            XYChart.Data<Number, Number> iterationsPerTagCountSeriesData = new XYChart.Data<>(simulationResult.tagCount, Math.log(simulationResult.iterations + 1));
             iterationsPerTagCountSeriesData.setNode(new ChartDataNode(simulationResult.iterations, seriesIndex));
             iterationsPerTagCountSeries.getData().add(iterationsPerTagCountSeriesData);
         }
