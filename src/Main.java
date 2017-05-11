@@ -11,6 +11,9 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
+/**
+ * @author Pedro Henrique
+ */
 public class Main extends Application {
 
     public static void main(String[] args) {

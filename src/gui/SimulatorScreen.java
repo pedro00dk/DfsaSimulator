@@ -4,12 +4,14 @@ import estimator.*;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.Cursor;
+import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.stage.Stage;
 import simulator.SimulationResult;
 import simulator.Simulator;
 
@@ -17,6 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
+/**
+ * @author Pedro Henrique
+ */
 public class SimulatorScreen {
 
     @FXML
@@ -59,6 +64,9 @@ public class SimulatorScreen {
     @FXML
     private LineChart<Number, Number> collisionSlotsPerTagCount;
 
+    // Extra line charts
+    private LineChart<Number, Number> iterationsPerTagCount = new LineChart<>(new NumberAxis(), new NumberAxis());
+
     @FXML
     private void initialize() {
         estimatorChooser.setItems(FXCollections.observableArrayList(
@@ -66,6 +74,7 @@ public class SimulatorScreen {
                 new Schoute(64),
                 new EomLee(64, 1e-3f),
                 new Chen(64),
+                new Vahedi(64),
                 new QAlgorithm(6, 0.1f),
                 new QAlgorithm(6, 0.2f),
                 new QAlgorithm(6, 0.3f),
@@ -75,6 +84,7 @@ public class SimulatorScreen {
                 new Schoute(128),
                 new EomLee(128, 1e-3f),
                 new Chen(128),
+                new Vahedi(128),
                 new QAlgorithm(7, 0.1f),
                 new QAlgorithm(7, 0.2f),
                 new QAlgorithm(7, 0.3f),
@@ -83,7 +93,7 @@ public class SimulatorScreen {
         ));
         estimatorChooser.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         estimatorChooser.getSelectionModel().selectAll();
-        //
+
         initialTagCount.textProperty().addListener(
                 (observable, oldValue, newValue) -> initialTagCount.setText(newValue.matches("\\d*") ? newValue : oldValue)
         );
@@ -91,7 +101,7 @@ public class SimulatorScreen {
         tagCountIncrement.textProperty().addListener(
                 (observable, oldValue, newValue) -> tagCountIncrement.setText(newValue.matches("\\d*") ? newValue : oldValue)
         );
-        tagCountIncrement.setText(Integer.toString(50));
+        tagCountIncrement.setText(Integer.toString(100));
         maxTagCount.textProperty().addListener(
                 (observable, oldValue, newValue) -> maxTagCount.setText(newValue.matches("\\d*") ? newValue : oldValue)
         );
@@ -100,12 +110,10 @@ public class SimulatorScreen {
                 (observable, oldValue, newValue) -> simulationsPerCount.setText(newValue.matches("\\d*") ? newValue : oldValue)
         );
         simulationsPerCount.setText(Integer.toString(10));
-        //
+
         showInCharts.setItems(FXCollections.observableArrayList("Average", "Min", "Max"));
         showInCharts.getSelectionModel().selectFirst();
-        //
-        timePerTagCount = new LineChart<>(new NumberAxis(), new LogAxis());
-        //
+
         ((NumberAxis) slotsPerTagCount.getXAxis()).setForceZeroInRange(false);
         ((NumberAxis) timePerTagCount.getXAxis()).setForceZeroInRange(false);
         ((NumberAxis) idleSlotsPerTagCount.getXAxis()).setForceZeroInRange(false);
@@ -118,12 +126,6 @@ public class SimulatorScreen {
         timePerTagCount.setCreateSymbols(false);
         idleSlotsPerTagCount.setCreateSymbols(false);
         collisionSlotsPerTagCount.setCreateSymbols(false);
-        //
-        /*
-        ((NumberAxis) slotsPerTagCount.getYAxis()).setAutoRanging(false);
-        ((NumberAxis) slotsPerTagCount.getYAxis()).setTickUnit(300);
-        ((NumberAxis) slotsPerTagCount.getYAxis()).setUpperBound(6000);
-        //*/
     }
 
     @FXML
@@ -166,14 +168,21 @@ public class SimulatorScreen {
             logArea.appendText("Simulations per count format error\n");
             logArea.appendText("Setting default value: " + simulationsPerCount + "\n");
         }
-        //
+
+        float startAllSimulationsTime = System.nanoTime();
         for (Estimator estimator : estimatorsToSimulate) {
             logArea.appendText("Simulating estimator " + estimator.getName() + "\n");
-            float startTime = System.nanoTime();
+            long startSimulationTime = System.nanoTime();
             plotSimulationData(calculateSimulationResults(estimator, initialTagCount, maxTagCount, tagCountIncrement, simulationsPerCount));
-            float endTime = System.nanoTime();
-            logArea.appendText("Total time: " + ((endTime - startTime) / 1000000.0) + "(ms)\n\n");
+            long endSimulationTime = System.nanoTime();
+            logArea.appendText("Total time: " + ((endSimulationTime - startSimulationTime) / 1000000.0) + "(ms)\n\n");
         }
+        float endAllSimulationsTime = System.nanoTime();
+        logArea.appendText("Total time: " + ((endAllSimulationsTime - startAllSimulationsTime) / 1000000.0) + "(ms)\n");
+
+        Stage iterationsChartWindow = new Stage();
+        iterationsChartWindow.setScene(new Scene(iterationsPerTagCount));
+        iterationsChartWindow.show();
     }
 
     private List<SimulationResult> calculateSimulationResults(Estimator estimator, int initialTagCount, int maxTagCount, int tagCountIncrement, int simulationCount) {
@@ -188,6 +197,7 @@ public class SimulatorScreen {
             IntStream.iterate(initialTagCount, tagCount -> tagCount + tagCountIncrement)
                     .limit((maxTagCount - initialTagCount) / tagCountIncrement + 1)
                     .parallel()
+                    .peek(tagCount -> System.out.println("Simulating " + estimator.toString() + " tag count: " + tagCount))
                     .forEach(tagCount ->
                             relevantSimulationResults.add(calculateRelevantData(calculateSimulationResultsPerTagCount(estimator, tagCount, simulationCount), relevantDataLabel)));
         }
@@ -221,14 +231,10 @@ public class SimulatorScreen {
 
     private void plotSimulationData(List<SimulationResult> simulationResults) {
         String estimatorName = simulationResults.get(0).estimator.getName();
-        XYChart.Series<Number, Number> slotsPerTagCountSeries;
-        XYChart.Series<Number, Number> timePerTagCountSeries;
-        XYChart.Series<Number, Number> idleSlotsPerTagCountSeries;
-        XYChart.Series<Number, Number> collisionSlotsPerTagCountSeries;
-        slotsPerTagCountSeries = new XYChart.Series<>();
-        timePerTagCountSeries = new XYChart.Series<>();
-        idleSlotsPerTagCountSeries = new XYChart.Series<>();
-        collisionSlotsPerTagCountSeries = new XYChart.Series<>();
+        XYChart.Series<Number, Number> slotsPerTagCountSeries = new XYChart.Series<>();
+        XYChart.Series<Number, Number> timePerTagCountSeries = new XYChart.Series<>();
+        XYChart.Series<Number, Number> idleSlotsPerTagCountSeries = new XYChart.Series<>();
+        XYChart.Series<Number, Number> collisionSlotsPerTagCountSeries = new XYChart.Series<>();
         slotsPerTagCountSeries.setName(estimatorName);
         timePerTagCountSeries.setName(estimatorName);
         idleSlotsPerTagCountSeries.setName(estimatorName);
@@ -237,6 +243,10 @@ public class SimulatorScreen {
         timePerTagCount.getData().add(timePerTagCountSeries);
         idleSlotsPerTagCount.getData().add(idleSlotsPerTagCountSeries);
         collisionSlotsPerTagCount.getData().add(collisionSlotsPerTagCountSeries);
+
+        XYChart.Series<Number, Number> iterationsPerTagCountSeries = new XYChart.Series<>();
+        iterationsPerTagCountSeries.setName(estimatorName);
+        iterationsPerTagCount.getData().add(iterationsPerTagCountSeries);
 
         int seriesIndex = slotsPerTagCount.getData().size() - 1;
 
@@ -256,6 +266,10 @@ public class SimulatorScreen {
             XYChart.Data<Number, Number> collisionSlotsPerTagCountSeriesData = new XYChart.Data<>(simulationResult.tagCount, simulationResult.collisionSlots);
             collisionSlotsPerTagCountSeriesData.setNode(new ChartDataNode(simulationResult.collisionSlots, seriesIndex));
             collisionSlotsPerTagCountSeries.getData().add(collisionSlotsPerTagCountSeriesData);
+
+            XYChart.Data<Number, Number> iterationsPerTagCountSeriesData = new XYChart.Data<>(simulationResult.tagCount, simulationResult.iterations);
+            iterationsPerTagCountSeriesData.setNode(new ChartDataNode(simulationResult.iterations, seriesIndex));
+            iterationsPerTagCountSeries.getData().add(iterationsPerTagCountSeriesData);
         }
     }
 

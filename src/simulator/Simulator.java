@@ -4,6 +4,8 @@ import estimator.Estimator;
 
 /**
  * Class to test the simulators.
+ *
+ * @author Pedro Henrique
  */
 public class Simulator {
 
@@ -34,6 +36,7 @@ public class Simulator {
         // Creating the simulation result, it will save the execution information
         SimulationResult simulationResult = new SimulationResult();
         simulationResult.estimator = estimator;
+        estimator.setSimulationResult(simulationResult);
         simulationResult.tagCount = tagCount;
 
         // Setting the first frame size

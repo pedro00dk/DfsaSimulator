@@ -2,6 +2,8 @@ package estimator;
 
 /**
  * Lower bound estimator implementation.
+ *
+ * @author Pedro Henrique
  */
 public class LowerBound implements Estimator {
 

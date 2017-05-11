@@ -2,6 +2,8 @@ package estimator;
 
 /**
  * Q estimator implementation.
+ *
+ * @author Pedro Henrique
  */
 public class QAlgorithm implements Estimator {
 

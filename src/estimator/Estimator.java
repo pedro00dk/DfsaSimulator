@@ -1,7 +1,11 @@
 package estimator;
 
+import simulator.SimulationResult;
+
 /**
  * Interface for estimator implementations.
+ *
+ * @author Pedro Henrique
  */
 public interface Estimator {
 
@@ -40,6 +44,13 @@ public interface Estimator {
      * @return the new frame size
      */
     int nextFrameSize(int idle, int success, int collision);
+
+    /**
+     * Sets the simulation result to the estimator write some information in it. By default this method do nothing.
+     */
+    default void setSimulationResult(SimulationResult simulationResult) {
+        // Do nothing by default
+    }
 
     /**
      * Returns a copy of the estimator, is used to do simulations in parallel.

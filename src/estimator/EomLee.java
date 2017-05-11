@@ -1,7 +1,11 @@
 package estimator;
 
+import simulator.SimulationResult;
+
 /**
  * Lower bound estimator implementation.
+ *
+ * @author Pedro Henrique
  */
 public class EomLee implements Estimator {
     private final int initialFrameSize;
@@ -42,6 +46,8 @@ public class EomLee implements Estimator {
         int l = idle + success + collision;
         float yk = 2;
         while (true) {
+            simulationResult.iterations++;
+
             float oldYk = yk;
             float bk = l / (oldYk * collision + success);
             float exp = (float) Math.exp(-1 / bk);
@@ -51,6 +57,16 @@ public class EomLee implements Estimator {
             }
         }
         return (int) Math.ceil(yk * collision);
+    }
+
+    /**
+     * Saves the simulation result internally to count the number of iterations.
+     */
+    private SimulationResult simulationResult;
+
+    @Override
+    public void setSimulationResult(SimulationResult simulationResult) {
+        this.simulationResult = simulationResult;
     }
 
     @Override

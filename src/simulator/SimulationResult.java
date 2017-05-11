@@ -6,6 +6,8 @@ import java.util.List;
 
 /**
  * Stores the simulations information.
+ *
+ * @author Pedro Henrique
  */
 public class SimulationResult {
 
@@ -46,6 +48,12 @@ public class SimulationResult {
      */
     public int collisionSlots;
 
+    /**
+     * The number of internal iterations of the complete simulation (not only frame size calculation) of the estimator.
+     * Some estimators does not contains this info.
+     */
+    public int iterations;
+
     //
 
     /**
@@ -73,6 +81,7 @@ public class SimulationResult {
             average.successSlots += simulationResult.successSlots;
             average.collisionSlots += simulationResult.collisionSlots;
             average.executionTime += simulationResult.executionTime;
+            average.iterations += simulationResult.iterations;
         }
         average.createdFrames /= simulationResults.size();
         average.createdSlots /= simulationResults.size();
@@ -80,6 +89,7 @@ public class SimulationResult {
         average.successSlots /= simulationResults.size();
         average.collisionSlots /= simulationResults.size();
         average.executionTime /= simulationResults.size();
+        average.iterations /= simulationResults.size();
 
         return average;
     }
@@ -102,6 +112,7 @@ public class SimulationResult {
         min.successSlots = Integer.MAX_VALUE;
         min.collisionSlots = Integer.MAX_VALUE;
         min.executionTime = Integer.MAX_VALUE;
+        min.iterations = Integer.MAX_VALUE;
 
         for (SimulationResult simulationResult : simulationResults) {
             min.createdFrames = min.createdFrames > simulationResult.createdFrames ? simulationResult.createdFrames : min.createdFrames;
@@ -110,6 +121,7 @@ public class SimulationResult {
             min.successSlots = min.successSlots > simulationResult.successSlots ? simulationResult.successSlots : min.successSlots;
             min.collisionSlots = min.collisionSlots > simulationResult.collisionSlots ? simulationResult.collisionSlots : min.collisionSlots;
             min.executionTime = min.executionTime > simulationResult.executionTime ? simulationResult.executionTime : min.executionTime;
+            min.iterations = min.iterations > simulationResult.iterations ? simulationResult.iterations : min.iterations;
         }
         return min;
     }
@@ -132,6 +144,7 @@ public class SimulationResult {
         max.successSlots = Integer.MIN_VALUE;
         max.collisionSlots = Integer.MIN_VALUE;
         max.executionTime = Integer.MIN_VALUE;
+        max.iterations = Integer.MIN_VALUE;
 
         for (SimulationResult simulationResult : simulationResults) {
             max.createdFrames = max.createdFrames < simulationResult.createdFrames ? simulationResult.createdFrames : max.createdFrames;
@@ -140,7 +153,7 @@ public class SimulationResult {
             max.successSlots = max.successSlots < simulationResult.successSlots ? simulationResult.successSlots : max.successSlots;
             max.collisionSlots = max.collisionSlots < simulationResult.collisionSlots ? simulationResult.collisionSlots : max.collisionSlots;
             max.executionTime = max.executionTime < simulationResult.executionTime ? simulationResult.executionTime : max.executionTime;
-
+            max.iterations = max.iterations < simulationResult.iterations ? simulationResult.iterations : max.iterations;
         }
         return max;
     }

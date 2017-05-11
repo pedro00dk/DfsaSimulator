@@ -1,7 +1,11 @@
 package estimator;
 
+import simulator.SimulationResult;
+
 /**
  * Chen estimator implementation.
+ *
+ * @author Pedro Henrique
  */
 public class Chen implements Estimator {
 
@@ -36,27 +40,55 @@ public class Chen implements Estimator {
 
     @Override
     public int nextFrameSize(int idle, int success, int collision) {
-        int l = idle + success + collision;
-        int n = success + 2 * collision;
-        float next = 0;
-        float previous = -1;
-        while (previous < next) {
-            float pIdle = (float) Math.pow((1 - (1 / l)), n);
-            float pSuccess = (n / l) * (float) Math.pow((1 - (1 / l)), n);
-            float pCollision = 1 - pIdle - pSuccess;
-            previous = next;
-            next = (f(l) / (f(idle) * f(success) * f(collision))) * (float) (Math.pow(pIdle, idle) * Math.pow(pSuccess, success) * Math.pow(pCollision, collision));
-            n += 1;
+
+        // If has no collisions return 0
+        if (collision == 0) {
+            return 0;
         }
-        return n - 2;
+
+        double i = idle;
+        double s = success;
+        double c = collision;
+
+        double l = i + s + c;
+        double n = s + c * 2;
+
+        double next = 0;
+        double previous = -1;
+
+        //
+        double not1_LpowN1 = Math.pow(1 - 1 / l, n - 1);
+        double not1_LpowN = not1_LpowN1 * (1 - 1 / l);
+
+        double fatL_fatIfatSfatC = MathUtils.factAndDiv(l, i, s, c);
+
+        while (previous < next) {
+            simulationResult.iterations++;
+
+            double pI = not1_LpowN;
+            double pS = (n / l) * not1_LpowN1;
+            double pC = 1 - pI - pS;
+
+            not1_LpowN1 = not1_LpowN;
+            not1_LpowN *= (1 - 1 / l);
+
+            previous = next;
+            n++;
+
+            next = fatL_fatIfatSfatC * Math.pow(pI, i) * Math.pow(pS, s) * Math.pow(pC, c);
+        }
+        int nextFrameSize = (int) (n - 2d) - success;
+        return nextFrameSize > 0 ? nextFrameSize : 2;
     }
 
-    private int f(int value) {
-        int factorial = 2;
-        for (int i = 3; i <= value; i++) {
-            factorial *= value;
-        }
-        return factorial;
+    /**
+     * Saves the simulation result internally to count the number of iterations.
+     */
+    private SimulationResult simulationResult;
+
+    @Override
+    public void setSimulationResult(SimulationResult simulationResult) {
+        this.simulationResult = simulationResult;
     }
 
     @Override

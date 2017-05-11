@@ -4,6 +4,8 @@ import java.util.Random;
 
 /**
  * Represents generic tags that can be used as type 1 or 3 tags.
+ *
+ * @author Pedro Henrique
  */
 public class Tag {
 

@@ -2,6 +2,8 @@ package estimator;
 
 /**
  * Schoute estimator implementation.
+ *
+ * @author Pedro Henrique
  */
 public class Schoute implements Estimator {
 
